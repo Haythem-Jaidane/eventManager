@@ -13,7 +13,7 @@ export class CheckpointService {
   constructor(private http: HttpClient) { }
 
   getEventCheckpoints(eventId: number): Observable<Checkpoint[]> {
-    return this.http.get<Checkpoint[]>(`${this.apiUrl}/${eventId}`);
+    return this.http.get<Checkpoint[]>(`${this.apiUrl}`);
   }
 
   getTeamCheckpoints(teamId: number): Observable<Checkpoint[]> {

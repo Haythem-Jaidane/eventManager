@@ -5,6 +5,7 @@ import { Team } from '../models/team.model';
 import { Checkpoint } from '../models/checkpoint.model';
 import { Participant } from '../models/participant.model';
 import { environment } from '../../environments/environment';
+import { EventParticipant } from '@app/models/event-participant.model';
 
 @Injectable({
   providedIn: 'root'
@@ -39,7 +40,11 @@ export class TeamService {
   }
 
   assignParticipants(teamId: number, participantIds: number[]): Observable<Team> {
-    return this.http.put<Team>(`http://localhost:8089/examen/affect/${teamId}`, participantIds);
+    return this.http.put<Team>(`http://localhost:8089/examen/${participantIds[0]}/affect/${teamId}`,null);
+  }
+
+  getParticipantsByEvent(idEvent: number): Observable<EventParticipant[]> {
+    return this.http.get<EventParticipant[]>(`${this.apiUrl}/${idEvent}/teams`);
   }
   
 

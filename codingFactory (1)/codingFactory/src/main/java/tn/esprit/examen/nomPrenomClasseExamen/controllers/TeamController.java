@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tn.esprit.examen.nomPrenomClasseExamen.entities.Event;
+import tn.esprit.examen.nomPrenomClasseExamen.entities.EventParticipant;
 import tn.esprit.examen.nomPrenomClasseExamen.entities.Team;
 import tn.esprit.examen.nomPrenomClasseExamen.services.EventService;
 import tn.esprit.examen.nomPrenomClasseExamen.services.TeamService;
@@ -29,5 +30,11 @@ public class TeamController {
     public ResponseEntity<Team> createCheckPoint(@RequestBody Team team) {
         Team response = teamService.createTeam(team);
         return ResponseEntity.status(201).body(response);
+    }
+
+    @GetMapping("/{idEvent}/teams")
+    public ResponseEntity<List<EventParticipant>> getAllParticipant(@PathVariable Long idEvent) {
+        Optional<Event> event = eventService.getEventById(idEvent);
+        return ResponseEntity.ok(teamService.getParticipants(event.orElse(null)));
     }
 }

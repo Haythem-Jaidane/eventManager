@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.List;
+
 @Getter
 @Setter
 @ToString
@@ -22,4 +24,8 @@ public class Team {
     @ManyToOne
     @JoinColumn(name = "event_id")
     private Event event;
+
+    @OneToMany
+    @JoinColumn(name = "participants")
+    private List<EventParticipant> participant;
 }

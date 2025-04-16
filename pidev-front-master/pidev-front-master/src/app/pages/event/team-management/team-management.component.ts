@@ -96,6 +96,8 @@ export class TeamManagementComponent implements OnInit, OnDestroy {
   teamForm: FormGroup;
   isCreatingTeam = false;
   isAddingCheckpoint = false;
+
+  participants_team: EventParticipant[] = [];
   
 
   constructor(
@@ -137,10 +139,19 @@ export class TeamManagementComponent implements OnInit, OnDestroy {
     });
 
     this.teamForm = this.fb.group({
-      name: ['', [Validators.required]],
-      description: [''],
-      eventId: [null, [Validators.required]]
+      teamName: ['', [Validators.required]],
+      event: ['', Validators.required]
     });
+
+    this.teamService.getParticipantsByEvent(this.eventId).subscribe(
+      (data: EventParticipant[]) => {
+        this.participants_team = data;
+      },
+      (error: any) => {
+        console.error('Error fetching participants:', error);
+      }
+    );
+    
   }
   
     ngOnInit(): void {
@@ -151,7 +162,11 @@ export class TeamManagementComponent implements OnInit, OnDestroy {
       
       if (eventIdParam && !isNaN(+eventIdParam)) {
         this.eventId = +eventIdParam;
-        this.teamForm.patchValue({ eventId: this.eventId });
+        this.teamForm.patchValue({
+          event: {
+            id: this.eventId
+          }
+        });
         console.log('Team Management initialized with event ID:', this.eventId);
         
         // Load data
@@ -179,6 +194,7 @@ export class TeamManagementComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (checkpoints) => {
           this.eventCheckpoints = checkpoints;
+          console.log(this.eventCheckpoints);
           this.isLoadingEventCheckpoints = false;
         },
         error: (error) => {
@@ -282,6 +298,8 @@ export class TeamManagementComponent implements OnInit, OnDestroy {
     this.teamProgress = Math.round((completedWeight / totalWeight) * 100);
   }
 
+
+
   loadParticipants(eventId: number): void {
     if (!eventId || isNaN(eventId)) {
       console.error('Invalid event ID for participants:', eventId);
@@ -318,24 +336,75 @@ export class TeamManagementComponent implements OnInit, OnDestroy {
       }
     });
   }
+  
+  getTeamName(teamId: number): string {
+    const team = this.teams.find(t => t.id === teamId);
+    return team ? team.teamName : 'Unknown Team';
+  }
 
-  assignToTeam(): void {
-    if (!this.selectedTeam) return;
+  getTeamMemberCount(teamId: number): number {
+    return this.participants.filter(p => p.participant.teamId === teamId).length;
+  }
   
-    const selectedParticipants = this.participants.filter((p) => p.selected);
-    if (selectedParticipants.length === 0) return;
+
   
-    /*const participantIds = selectedParticipants.map(p => p.participant.id); // Assuming participants have an 'id' property
+  isParticipantInSelectedTeam(participant: Participant): boolean {
+    return this.selectedTeam ? participant.teamId === this.selectedTeam.id : false;
+  }
+ // stores only the team id
+
+ get selectedTeamObj(): Team | undefined {
+  return this.teams.find(team => team.id === this.selectedTeam?.id);
+}
+
+
+assignToTeam() {
+  const selectedParticipantIds = this.participants
+  .filter(p => p.selected && p.participant.id !== undefined)
+  .map(p => p.participant.id!) as number[];
+
+  if (!this.selectedTeam || selectedParticipantIds.length === 0) {
+    return;
+  }
+
+  if (!this.selectedTeam || !this.selectedTeam.id) {
+    this.showError('No team selected.');
+    return;
+  }
   
-    this.teamService.assignParticipants(this.selectedTeam?.id?,participantIds ).subscribe(
-      () => {
-        alert('Participants successfully assigned to team!');
-        this.loadParticipants(this.selectedTeam.eventId); // Refresh participant list for the event
+  this.teamService.assignParticipants(this.selectedTeam.id, selectedParticipantIds)
+    .subscribe({
+      next: () => {
+        this.showSuccess('Participants assigned successfully');
+        this.refreshParticipants(); // reload if needed
       },
-      (error) => {
-        console.error('Error assigning participants:', error);
+      error: err => {
+        console.error('Assignment failed', err);
+        this.showError('Failed to assign participants');
       }
-    );*/
+    });
+}
+
+
+
+
+refreshParticipants() {
+  this.teamService.getParticipantsByEvent(this.eventId).subscribe(
+    (data: EventParticipant[]) => {
+      this.participants = data.map((ep: EventParticipant) => ({
+        participant: ep.participant, // assuming each EventParticipant has a 'participant' field
+        selected: false
+      }));
+    }
+  );
+}
+
+  
+  private getAssignmentErrorMessage(error: any): string {
+    if (error.status === 404) return 'Team or participant not found';
+    if (error.status === 400) return error.error?.message || 'Invalid assignment request';
+    if (error.status === 409) return 'Some participants are already assigned to other teams';
+    return 'Failed to assign participants. Please try again.';
   }
 
   hasSelectedParticipants(): boolean {
@@ -462,25 +531,24 @@ export class TeamManagementComponent implements OnInit, OnDestroy {
     }
   }
 
-  onCreateTeam(): void {
-    if (this.teamForm.valid) {
-      this.isCreatingTeam = true;
-      const team: Team = this.teamForm.value;
+  onCreateTeam() {
+    if (this.teamForm.invalid) return;
+  
+    this.isCreatingTeam = true;
+    const payload = this.teamForm.value;
 
-      this.teamService.createTeam(team).subscribe({
-        next: (createdTeam) => {
-          this.teams.push(createdTeam);
-          this.teamForm.reset({ eventId: this.eventId });
-          this.isCreatingTeam = false;
-          this.showSuccess('Team created successfully');
-        },
-        error: (error) => {
-          console.error('Error creating team:', error);
-          this.isCreatingTeam = false;
-          this.showError('Failed to create team');
-        }
-      });
-    }
+    console.log(payload)
+  
+    this.teamService.createTeam(payload).subscribe({
+      next: (res) => {
+        console.log('Team created:', res);
+        this.isCreatingTeam = false;
+      },
+      error: (err) => {
+        console.error('Error creating team:', err);
+        this.isCreatingTeam = false;
+      }
+    });
   }
 
   onRemoveParticipant(team: Team, participant: Participant): void {
@@ -534,62 +602,55 @@ export class TeamManagementComponent implements OnInit, OnDestroy {
       this.showError('Please wait for event data to load.');
       return;
     }
-
-    // Fetch event description using the event ID
-    /*this.eventService.getEventById(this.eventId).subscribe({
-      next: (event: Event) => {
-        this.eventDescription = event.description; // Get the event description
-        this.isGeneratingCheckpoints = true;
-
-        this.aiService.generateCheckpoints(this.eventDescription)
-          .pipe(takeUntil(this.destroy$))
-          .subscribe({
-            next: (aiResponse) => {
-              const allCheckpoints: Checkpoint[] = aiResponse.checkpoints.map((cp: any) => ({
-                id: 0,
-                title: cp.title,
-                description: cp.description,
-                percentage: cp.percentage,
-                status: 'PENDING', // must match Checkpoint type
-              }));
-
-              const checkpointsToAdd = allCheckpoints.slice(0, -1); // remove last checkpoint
-
-              const addRequests = checkpointsToAdd.map(cp =>
-                this.checkpointService.addCheckpoint(cp)
-              );
-
-              forkJoin(addRequests)
-                .pipe(takeUntil(this.destroy$))
-                .subscribe({
-                  next: (addedCheckpoints) => {
-                    this.checkpoints = [...this.checkpoints, ...addedCheckpoints];
-                    this.aiCheckpointForm.reset();
-                    this.isGeneratingCheckpoints = false;
-                    this.showSuccess('AI checkpoints generated and added successfully');
-                    this.updateTimeline();
-                    this.calculateTeamProgress();
-                  },
-                  error: (err: any) => {
-                    console.error('Error saving checkpoints:', err);
-                    this.isGeneratingCheckpoints = false;
-                    this.showError('Failed to add AI-generated checkpoints');
-                  }
-                });
-            },
-            error: (err: any) => {
-              console.error('AI generation failed:', err);
-              this.isGeneratingCheckpoints = false;
-              this.showError('Failed to generate checkpoints from AI');
-            }
-          });
+  
+    const description = this.aiCheckpointForm.get('projectDescription')?.value;
+    if (!description) {
+      this.showError('Please provide a project description.');
+      return;
+    }
+  
+    this.isGeneratingCheckpoints = true;
+  
+    this.aiService.generateCheckpoints(description).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (aiResponse: any) => {
+        const generatedCheckpoints: Checkpoint[] = aiResponse.checkpoints.map((cp: any) => ({
+          id: 0,
+          title: cp.title,
+          description: cp.description,
+          percentage: cp.percentage,
+          status: 'PENDING',
+          eventId: this.eventId
+        }));
+  
+        const addRequests = generatedCheckpoints.map((cp: Checkpoint) =>
+          this.checkpointService.addCheckpoint(cp)
+        );
+  
+        forkJoin(addRequests).pipe(takeUntil(this.destroy$)).subscribe({
+          next: (addedCheckpoints: Checkpoint[]) => {
+            this.checkpoints = [...this.checkpoints, ...addedCheckpoints];
+            this.aiCheckpointForm.reset();
+            this.isGeneratingCheckpoints = false;
+            this.showSuccess('AI checkpoints generated and added successfully');
+            this.updateTimeline();
+            this.calculateTeamProgress();
+          },
+          error: (err: any) => {
+            console.error('Error saving checkpoints:', err);
+            this.isGeneratingCheckpoints = false;
+            this.showError('Failed to add AI-generated checkpoints');
+          }
+        });
       },
       error: (err: any) => {
-        console.error('Error loading event data:', err);
-        this.showError('Failed to load event description');
+        console.error('AI generation failed:', err);
+        this.isGeneratingCheckpoints = false;
+        this.showError('Failed to generate checkpoints from AI');
       }
-    });*/
+    });
   }
+  
+  
   
 
   updateCheckpointStatus(checkpointId: number, status: string): void {

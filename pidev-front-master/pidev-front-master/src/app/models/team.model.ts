@@ -4,7 +4,7 @@ import { Participant } from './participant.model';
 export interface Team {
   id?: number;
   teamName: string;
-  eventId: number;
+  event: Event;
   participants: Participant[];
   checkpoints: Checkpoint[];
 } 
