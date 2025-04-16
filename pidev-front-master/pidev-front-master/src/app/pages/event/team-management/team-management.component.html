@@ -261,30 +261,6 @@
       </mat-card-content>
     </mat-card>
     <!-- AI Checkpoint Generator Section -->
-<mat-card class="mb-4">
-  <mat-card-title>AI Checkpoint Generator</mat-card-title>
-  <form [formGroup]="aiCheckpointForm" (ngSubmit)="onGenerateAICheckpoints()">
-    <mat-form-field appearance="fill" class="w-full">
-      <mat-label>Project Description</mat-label>
-      <textarea matInput rows="4" formControlName="projectDescription"></textarea>
-    </mat-form-field>
-    <button mat-raised-button color="primary" type="submit" [disabled]="isGeneratingCheckpoints">
-      <mat-spinner *ngIf="isGeneratingCheckpoints" diameter="20"></mat-spinner>
-      <span *ngIf="!isGeneratingCheckpoints">Generate Checkpoints</span>
-    </button>
-  </form>
-
-  <mat-divider class="my-3"></mat-divider>
-
-  <!-- Generated Checkpoints -->
-  <mat-list *ngIf="checkpoints.length > 0">
-    <mat-list-item *ngFor="let cp of checkpoints">
-      <div matLine><strong>{{ cp.title }}</strong></div>
-      <div matLine>{{ cp.description }}</div>
-      <div matLine class="text-sm text-gray-500">{{ cp.percentage }}%</div>
-    </mat-list-item>
-  </mat-list>
-</mat-card>
 
 <!-- Team List Section -->
 <mat-card class="mb-4">

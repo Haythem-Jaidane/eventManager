@@ -35,6 +35,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select';
 import { MatOptionModule } from '@angular/material/core';
+import { Evaluation } from '@app/models/evaluation.model';
 
 
 @Component({
@@ -146,6 +147,7 @@ export class TeamManagementComponent implements OnInit, OnDestroy {
       event: ['', Validators.required]
     });
 
+
     this.teamService.getParticipantsByEvent(this.eventId).subscribe(
       (data: EventParticipant[]) => {
         this.participants_team = data;
@@ -163,6 +165,7 @@ export class TeamManagementComponent implements OnInit, OnDestroy {
       const eventIdParam = params['id'];
       console.log('Route params:', params);
       console.log('Event ID from route:', eventIdParam);
+
       
       if (eventIdParam && !isNaN(+eventIdParam)) {
         this.eventId = +eventIdParam;
@@ -429,6 +432,19 @@ refreshParticipants() {
 
   hasSelectedParticipants(): boolean {
     return this.participants.some(p => p.selected);
+  }
+
+  submitEvaluations(evaluations: Evaluation[]) {
+    this.teamService.submitTeamEvaluation(evaluations).subscribe({
+      next: (response) => {
+        console.log('Evaluation successful:', response);
+        this.showSuccess('Evaluation submitted!');
+      },
+      error: (error) => {
+        console.error('Evaluation error:', error);
+        this.showError('Failed to submit evaluation');
+      },
+    });
   }
 
   goBack(): void {
@@ -733,4 +749,5 @@ onGenerateAICheckpoints(): void {
     }
     this.onAddCheckpoint(this.selectedTeam);
   }
+
 }
