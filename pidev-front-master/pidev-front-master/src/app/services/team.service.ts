@@ -46,6 +46,10 @@ export class TeamService {
   getParticipantsByEvent(idEvent: number): Observable<EventParticipant[]> {
     return this.http.get<EventParticipant[]>(`${this.apiUrl}/${idEvent}/teams`);
   }
+
+  submitTeamEvaluation(data: any[]): Observable<any> {
+    return this.http.post(`http://localhost:8089/api/evaluations`, data);
+  }
   
 
   // Checkpoint methods

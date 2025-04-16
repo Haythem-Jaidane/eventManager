@@ -9,11 +9,10 @@ public interface ICheckPointService {
 
     Checkpoint addCheckPoint(Checkpoint checkpoint);
 
-    List<Checkpoint> getCheckPointsByEvent();
-
-    Boolean deleteCheckPoint(Checkpoint checkpoint);
-
-    Boolean updateCheckPoint(Checkpoint checkpoint);
+    List<Checkpoint> getCheckPointsByEventId(Long eventId);
+    Checkpoint getCheckPointById(Long id);
+    Checkpoint updateCheckPoint(Long id, Checkpoint checkpoint);
+    void deleteCheckPoint(Long id);
 
 
 }

@@ -98,6 +98,9 @@ export class TeamManagementComponent implements OnInit, OnDestroy {
   isAddingCheckpoint = false;
 
   participants_team: EventParticipant[] = [];
+  selectedTeamObj: Team | null = null;
+  evaluationForm = this.fb.group({});
+
   
 
   constructor(
@@ -156,6 +159,7 @@ export class TeamManagementComponent implements OnInit, OnDestroy {
   
     ngOnInit(): void {
     this.route.params.subscribe(params => {
+      this.evaluationForm = this.fb.group({});
       const eventIdParam = params['id'];
       console.log('Route params:', params);
       console.log('Event ID from route:', eventIdParam);
@@ -171,8 +175,8 @@ export class TeamManagementComponent implements OnInit, OnDestroy {
         
         // Load data
         this.loadTeams();
-        this.loadEventCheckpoints();
-      this.loadParticipants(this.eventId);
+        this.loadEventCheckpoints(this.eventId);
+        this.loadParticipants(this.eventId);
       } else {
         console.error('Invalid event ID in route params:', eventIdParam);
         this.showError('Invalid event ID provided');
@@ -187,22 +191,42 @@ export class TeamManagementComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  loadEventCheckpoints(): void {
+  updateEvaluationForm(): void {
+    const group: any = {};
+    this.checkpoints.forEach((_, i) => {
+      group['score' + i] = [null];
+    });
+    this.evaluationForm = this.fb.group(group);
+  }
+  
+  submitEvaluation(): void {
+    const scores = this.evaluationForm.value as { [key: string]: number }; // Type the value explicitly
+    const evaluations = this.checkpoints.map((cp, index) => ({
+      checkpointId: cp.id,
+      teamId: this.selectedTeamObj?.id,
+      score: scores['score' + index], // TypeScript now understands this
+    }));
+  
+    this.teamService.submitTeamEvaluation(evaluations).subscribe({
+      next: () => this.showSuccess("Team evaluated successfully."),
+      error: (err) => {
+        console.error(err);
+        this.showError("Failed to evaluate team.");
+      }
+    });
+  }
+
+  loadEventCheckpoints(eventId: number): void {
     this.isLoadingEventCheckpoints = true;
-    this.checkpointService.getEventCheckpoints(this.eventId)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (checkpoints) => {
-          this.eventCheckpoints = checkpoints;
-          console.log(this.eventCheckpoints);
-          this.isLoadingEventCheckpoints = false;
-        },
-        error: (error) => {
-          console.error('Error loading event checkpoints:', error);
-          this.isLoadingEventCheckpoints = false;
-          this.showError('Failed to load event checkpoints');
-        }
-      });
+    this.checkpointService.getCheckpointsByEventId(eventId).subscribe({
+      next: (data) => {
+        this.checkpoints = data;
+        console.log('Fetched checkpoints:', data);
+      },
+      error: (err) => {
+        console.error('Error fetching checkpoints:', err);
+      }
+    });
   }
   
   /*onAddEventCheckpoint(): void {
@@ -352,10 +376,6 @@ export class TeamManagementComponent implements OnInit, OnDestroy {
     return this.selectedTeam ? participant.teamId === this.selectedTeam.id : false;
   }
  // stores only the team id
-
- get selectedTeamObj(): Team | undefined {
-  return this.teams.find(team => team.id === this.selectedTeam?.id);
-}
 
 
 assignToTeam() {
@@ -597,114 +617,114 @@ refreshParticipants() {
     }
   }
 
-  onGenerateAICheckpoints(): void {
-    if (!this.eventId) {
-      this.showError('Please wait for event data to load.');
-      return;
+  aiAssistantMessage = '';
+
+onGenerateAICheckpoints(): void {
+  if (!this.eventId) {
+    this.showError('Please wait for event data to load.');
+    return;
+  }
+
+  const description = this.aiCheckpointForm.get('projectDescription')?.value;
+  if (!description) {
+    this.showError('Please provide a project description.');
+    return;
+  }
+
+  this.isGeneratingCheckpoints = true;
+  this.aiAssistantMessage = 'Thinking... generating personalized checkpoints...';
+
+  this.aiService.generateCheckpoints(description).pipe(takeUntil(this.destroy$)).subscribe({
+    next: (aiResponse: any) => {
+      // Optional: show AI assistant text message
+      this.aiAssistantMessage = aiResponse.summary || 'Here are the suggested checkpoints for your project.';
+
+      const generatedCheckpoints: Checkpoint[] = aiResponse.checkpoints.map((cp: any) => ({
+        id: 0,
+        title: cp.title,
+        description: cp.description,
+        percentage: cp.percentage,
+        status: 'PENDING',
+        eventId: this.eventId
+      }));
+
+      const addRequests = generatedCheckpoints.map((cp: Checkpoint) =>
+        this.checkpointService.addCheckpoint(cp)
+      );
+
+      forkJoin(addRequests).pipe(takeUntil(this.destroy$)).subscribe({
+        next: (addedCheckpoints: Checkpoint[]) => {
+          this.checkpoints = [...this.checkpoints, ...addedCheckpoints];
+          this.aiCheckpointForm.reset();
+          this.isGeneratingCheckpoints = false;
+          this.showSuccess('AI checkpoints generated and added successfully');
+          this.updateTimeline();
+        },
+        error: (err: any) => {
+          console.error('Error saving checkpoints:', err);
+          this.isGeneratingCheckpoints = false;
+          this.showError('Failed to add AI-generated checkpoints');
+        }
+      });
+    },
+    error: (err: any) => {
+      console.error('AI generation failed:', err);
+      this.aiAssistantMessage = '';
+      this.isGeneratingCheckpoints = false;
+      this.showError('Failed to generate checkpoints from AI');
     }
+  });
+}
   
-    const description = this.aiCheckpointForm.get('projectDescription')?.value;
-    if (!description) {
-      this.showError('Please provide a project description.');
-      return;
-    }
   
-    this.isGeneratingCheckpoints = true;
+  onTeamChange(): void {
+    this.selectedTeamObj = this.teams.find(t => t.id === this.selectedTeam?.id) || null;
+
+    this.loadTeamCheckpoints();
+  }
   
-    this.aiService.generateCheckpoints(description).pipe(takeUntil(this.destroy$)).subscribe({
-      next: (aiResponse: any) => {
-        const generatedCheckpoints: Checkpoint[] = aiResponse.checkpoints.map((cp: any) => ({
-          id: 0,
-          title: cp.title,
-          description: cp.description,
-          percentage: cp.percentage,
-          status: 'PENDING',
-          eventId: this.eventId
-        }));
-  
-        const addRequests = generatedCheckpoints.map((cp: Checkpoint) =>
-          this.checkpointService.addCheckpoint(cp)
-        );
-  
-        forkJoin(addRequests).pipe(takeUntil(this.destroy$)).subscribe({
-          next: (addedCheckpoints: Checkpoint[]) => {
-            this.checkpoints = [...this.checkpoints, ...addedCheckpoints];
-            this.aiCheckpointForm.reset();
-            this.isGeneratingCheckpoints = false;
-            this.showSuccess('AI checkpoints generated and added successfully');
-            this.updateTimeline();
-            this.calculateTeamProgress();
-          },
-          error: (err: any) => {
-            console.error('Error saving checkpoints:', err);
-            this.isGeneratingCheckpoints = false;
-            this.showError('Failed to add AI-generated checkpoints');
-          }
-        });
-      },
-      error: (err: any) => {
-        console.error('AI generation failed:', err);
-        this.isGeneratingCheckpoints = false;
-        this.showError('Failed to generate checkpoints from AI');
-      }
+  loadTeamCheckpoints(): void {
+    const teamId = this.selectedTeam?.id;
+    if (!teamId) return;
+    this.checkpointService.getTeamCheckpoints(teamId).subscribe({
+      next: (data) => this.checkpoints = data,
+      error: () => this.checkpoints = []
     });
   }
   
-  
-  
 
-  updateCheckpointStatus(checkpointId: number, status: string): void {
-    if (!checkpointId) {
-      this.showError('Invalid checkpoint ID');
-      return;
-    }
-
-    this.checkpointService.updateCheckpointStatus(checkpointId, status)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (updatedCheckpoint: Checkpoint) => {
-          // Update the checkpoint in our local array
-          const index = this.checkpoints.findIndex(c => c.id === checkpointId);
-          if (index !== -1) {
-            this.checkpoints[index] = updatedCheckpoint;
-            this.teamCheckpoints = this.checkpoints.filter(c => c.teamId === this.selectedTeam?.id);
-            this.calculateTeamProgress();
-            this.updateTimeline();
-          }
-          this.showSuccess('Checkpoint status updated successfully');
+  updateCheckpoint(cp: Checkpoint): void {
+    if (cp.id != null) {
+      this.checkpointService.updateCheckpoint(cp.id, cp).subscribe({
+        next: (updated) => {
+          this.showSuccess('Checkpoint updated!');
         },
-        error: (error: Error) => {
-          console.error('Error updating checkpoint status:', error);
-          this.showError('Failed to update checkpoint status');
+        error: (err) => {
+          console.error('Update failed', err);
+          this.showError('Failed to update checkpoint.');
         }
       });
-  }
-
-  deleteCheckpoint(checkpointId: number): void {
-    if (!checkpointId) {
-      this.showError('Invalid checkpoint ID');
-      return;
+    } else {
+      console.error('Checkpoint ID is missing. Cannot update.');
+      this.showError('Cannot update checkpoint without an ID.');
     }
-
+  }
+  
+  deleteCheckpoint(cpId: number): void {
     if (confirm('Are you sure you want to delete this checkpoint?')) {
-      this.checkpointService.deleteCheckpoint(checkpointId)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: () => {
-            // Remove the checkpoint from our local arrays
-            this.checkpoints = this.checkpoints.filter(c => c.id !== checkpointId);
-            this.teamCheckpoints = this.teamCheckpoints.filter(c => c.id !== checkpointId);
-            this.calculateTeamProgress();
-            this.updateTimeline();
-            this.showSuccess('Checkpoint deleted successfully');
-          },
-          error: (error: Error) => {
-            console.error('Error deleting checkpoint:', error);
-            this.showError('Failed to delete checkpoint');
-          }
-        });
+      this.checkpointService.deleteCheckpoint(cpId).subscribe({
+        next: () => {
+          this.checkpoints = this.checkpoints.filter(cp => cp.id !== cpId);
+          this.showSuccess('Checkpoint deleted!');
+        },
+        error: (err) => {
+          console.error('Delete failed', err);
+          this.showError('Failed to delete checkpoint.');
+        }
+      });
     }
   }
+  
 
   addCheckpoint(): void {
     if (!this.selectedTeam) {

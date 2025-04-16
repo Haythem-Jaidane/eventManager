@@ -12,8 +12,9 @@ export class CheckpointService {
 
   constructor(private http: HttpClient) { }
 
-  getEventCheckpoints(eventId: number): Observable<Checkpoint[]> {
-    return this.http.get<Checkpoint[]>(`${this.apiUrl}`);
+  getCheckpointsByEventId(eventId: number): Observable<Checkpoint[]> {
+    console.log(this.apiUrl);
+    return this.http.get<Checkpoint[]>(`${this.apiUrl}/${eventId}`);
   }
 
   getTeamCheckpoints(teamId: number): Observable<Checkpoint[]> {
@@ -24,11 +25,13 @@ export class CheckpointService {
     return this.http.post<Checkpoint>(`${this.apiUrl}/add`, checkpoint);
   }
 
-  updateCheckpointStatus(checkpointId: number, status: string): Observable<Checkpoint> {
-    return this.http.patch<Checkpoint>(`${this.apiUrl}/${checkpointId}/status`, { status });
+  // ✅ Update checkpoint
+  updateCheckpoint(id: number, updatedCheckpoint: Checkpoint): Observable<Checkpoint> {
+    return this.http.put<Checkpoint>(`${this.apiUrl}/${id}`, updatedCheckpoint);
   }
 
-  deleteCheckpoint(checkpointId: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${checkpointId}`);
+  // ✅ Delete checkpoint
+  deleteCheckpoint(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 }

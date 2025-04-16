@@ -51,20 +51,15 @@
                 <div class="section">
                   <h4><mat-icon>people</mat-icon> Participants</h4>
                   <!-- Uncomment this section if needed -->
-                  <div *ngIf="participants.length > 0">
+                  <div>
                     <mat-list>
-                      <mat-list-item *ngFor="let participant of participants_team">
-                        <div class="participant-info">
-                          <div class="participant-name">{{ participant.participant.name }}</div>
-                          <div class="participant-email">{{ participant.participant.email }}</div>
-                        </div>
+                      <mat-list-item *ngFor="let checkpoint of checkpoints">
+                        {{ checkpoint.description }}
                       </mat-list-item>
                     </mat-list>
+                    
                   </div>
                   
-                  <div *ngIf="participants.length === 0">
-                    <p>No participants available for this event.</p>
-                  </div>
                 </div>
 
                 <!-- Checkpoints Section -->
@@ -72,19 +67,19 @@
 
                   <!-- Checkpoints List -->
                   <div class="checkpoints-list">
-                    <mat-list>
-                      <mat-list-item *ngFor="let checkpoint of eventCheckpoints">
-                        <div matListItemTitle>{{ checkpoint.description }}</div>
-                        <div matListItemLine>{{ checkpoint.description }}</div>
-                        <div matListItemLine class="checkpoint-info">
-                          <span class="percentage-badge">{{ checkpoint.percentage }}%</span>
+                      <mat-list>
+                        <mat-list-item *ngFor="let checkpoint of checkpoints">
+                          {{ checkpoint.description }}
+                        </mat-list-item>
+                      </mat-list>
+                      
+                      <ng-template #noCheckpoints>
+                        <div class="empty-state">
+                          <mat-icon>flag_off</mat-icon>
+                          <p>No checkpoints defined for this team yet</p>
                         </div>
-                      </mat-list-item>
-                      <div *ngIf="!teamCheckpoints.length" class="empty-state">
-                        <mat-icon>flag_off</mat-icon>
-                        <p>No checkpoints defined for this team yet</p>
-                      </div>
-                    </mat-list>
+                      </ng-template>
+                    
                   </div>
                 </div>
               </div>
@@ -96,18 +91,28 @@
 
     <!-- Team Selector -->
     <mat-card class="participants-card">
-      <mat-card-title>Checkpoints</mat-card-title>
-      <mat-divider></mat-divider>
-      <mat-list>
-        <mat-list-item *ngFor="let checkpoint of eventCheckpoints">
-          <div class="checkpoint-container">
-            <div class="checkpoint-header">
-              <span class="checkpoint-title">{{ checkpoint.description }}</span>
-              <span class="percentage-badge">{{ checkpoint.percentage }}%</span>
-            </div>
-          </div>
-        </mat-list-item>
-      </mat-list>
+      <div *ngFor="let cp of checkpoints">
+        <mat-form-field>
+          <input matInput [(ngModel)]="cp.title" placeholder="Title" />
+        </mat-form-field>
+        <mat-form-field>
+          <textarea matInput [(ngModel)]="cp.description" placeholder="Description"></textarea>
+        </mat-form-field>
+        <mat-form-field>
+          <input matInput type="number" [(ngModel)]="cp.percentage" placeholder="Progress %" />
+        </mat-form-field>
+      
+        <button mat-icon-button color="primary" (click)="updateCheckpoint(cp)">
+          <mat-icon>save</mat-icon>
+        </button>
+        <button mat-icon-button color="warn" (click)="deleteCheckpoint(cp.id!)">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </div>
+      
+      <ng-template #noCheckpoints>
+        <p>No checkpoints found.</p>
+      </ng-template>
     </mat-card>
     
 
@@ -229,16 +234,98 @@
                   <textarea matInput formControlName="projectDescription" rows="4"
                             placeholder="Describe the project for AI-based checkpoint generation."></textarea>
                 </mat-form-field>
-                <button mat-raised-button color="accent" type="submit"
-                        >
+            
+                <button mat-raised-button color="accent" type="submit" [disabled]="isGeneratingCheckpoints">
                   <mat-icon>auto_awesome</mat-icon>
                   {{ isGeneratingCheckpoints ? 'Generating...' : 'Generate Checkpoints' }}
                 </button>
               </form>
+            
+              <div *ngIf="aiAssistantMessage" class="assistant-message mat-elevation-z2">
+                <mat-icon class="mr-2">smart_toy</mat-icon>
+                <span>{{ aiAssistantMessage }}</span>
+              </div>
+            
+              <mat-divider class="my-2"></mat-divider>
+            
+              <mat-list *ngIf="checkpoints.length > 0">
+                <mat-list-item *ngFor="let cp of checkpoints">
+                  <div matLine><strong>{{ cp.title }}</strong></div>
+                  <div matLine>{{ cp.description }}</div>
+                  <div matLine class="text-sm text-gray-500">{{ cp.percentage }}%</div>
+                </mat-list-item>
+              </mat-list>
             </mat-tab>
           </mat-tab-group>
         </div>
       </mat-card-content>
     </mat-card>
+    <!-- AI Checkpoint Generator Section -->
+<mat-card class="mb-4">
+  <mat-card-title>AI Checkpoint Generator</mat-card-title>
+  <form [formGroup]="aiCheckpointForm" (ngSubmit)="onGenerateAICheckpoints()">
+    <mat-form-field appearance="fill" class="w-full">
+      <mat-label>Project Description</mat-label>
+      <textarea matInput rows="4" formControlName="projectDescription"></textarea>
+    </mat-form-field>
+    <button mat-raised-button color="primary" type="submit" [disabled]="isGeneratingCheckpoints">
+      <mat-spinner *ngIf="isGeneratingCheckpoints" diameter="20"></mat-spinner>
+      <span *ngIf="!isGeneratingCheckpoints">Generate Checkpoints</span>
+    </button>
+  </form>
+
+  <mat-divider class="my-3"></mat-divider>
+
+  <!-- Generated Checkpoints -->
+  <mat-list *ngIf="checkpoints.length > 0">
+    <mat-list-item *ngFor="let cp of checkpoints">
+      <div matLine><strong>{{ cp.title }}</strong></div>
+      <div matLine>{{ cp.description }}</div>
+      <div matLine class="text-sm text-gray-500">{{ cp.percentage }}%</div>
+    </mat-list-item>
+  </mat-list>
+</mat-card>
+
+<!-- Team List Section -->
+<mat-card class="mb-4">
+  <mat-card-title>Teams</mat-card-title>
+  <mat-selection-list>
+    <mat-list-option *ngFor="let team of teams" (click)="selectTeam(team)" [selected]="team.id === selectedTeam?.id">
+      {{ team.teamName }}
+    </mat-list-option>
+  </mat-selection-list>
+</mat-card>
+
+<!-- Team Evaluation Section -->
+<mat-card>
+  <mat-card-title>
+    Team Evaluation - {{ selectedTeamObj?.teamName || 'Select a team' }}
+  </mat-card-title>
+
+  <form *ngIf="checkpoints.length > 0" [formGroup]="evaluationForm" (ngSubmit)="submitEvaluation()">
+    <mat-list>
+      <div *ngFor="let checkpoint of checkpoints; let i = index">
+        <mat-list-item>
+          <div matLine>{{ checkpoint.description }}</div>
+          <div matLine>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Score (%)</mat-label>
+              <input matInput type="number" min="0" max="100" [formControlName]="'score' + i">
+            </mat-form-field>
+          </div>
+        </mat-list-item>
+      </div>
+    </mat-list>
+    <button mat-raised-button color="primary" type="submit">Submit Evaluation</button>
+  </form>
+
+  <ng-template #noTeamCheckpoints>
+    <div class="text-center text-gray-500 p-4">
+      <mat-icon>flag</mat-icon>
+      <p>No checkpoints for the selected team yet.</p>
+    </div>
+  </ng-template>
+</mat-card>
+
   </div>
 </div>

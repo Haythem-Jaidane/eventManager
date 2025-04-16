@@ -7,4 +7,5 @@ export interface Team {
   event: Event;
   participants: Participant[];
   checkpoints: Checkpoint[];
+  members?: Participant[];
 } 
