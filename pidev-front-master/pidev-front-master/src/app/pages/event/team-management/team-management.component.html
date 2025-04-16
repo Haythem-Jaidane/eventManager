@@ -1,0 +1,383 @@
+<div class="team-management-container">
+  <div class="header-section">
+    <button mat-raised-button color="warn" class="return-button" (click)="goBack()">
+      <mat-icon>arrow_back</mat-icon>
+      Return
+    </button>
+    <h1>Team Management</h1>
+  </div>
+
+  <div class="content-grid">
+    <!-- Teams Section -->
+    <mat-card class="teams-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>groups</mat-icon>
+          Teams
+        </mat-card-title>
+      </mat-card-header>
+
+      <mat-card-content>
+        <!-- Team Creation Form -->
+        <form [formGroup]="teamForm" (ngSubmit)="onCreateTeam()" class="team-form">
+          <h3>Create New Team</h3>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Team Name</mat-label>
+            <input matInput formControlName="name" placeholder="Enter team name">
+            <mat-error *ngIf="teamForm.get('name')?.hasError('required')">
+              Team name is required
+            </mat-error>
+          </mat-form-field>
+          
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Description</mat-label>
+            <textarea matInput formControlName="description" rows="3" placeholder="Enter team description"></textarea>
+          </mat-form-field>
+          
+          <!-- Hidden field for event ID -->
+          <input type="hidden" formControlName="eventId">
+          
+          <div class="form-actions">
+            <button mat-raised-button color="primary" type="submit" [disabled]="teamForm.invalid || isCreatingTeam">
+              <mat-icon>add</mat-icon>
+              {{ isCreatingTeam ? 'Creating...' : 'Create Team' }}
+            </button>
+          </div>
+        </form>
+
+        <!-- Teams List -->
+        <div class="teams-list">
+          <mat-accordion>
+            <mat-expansion-panel *ngFor="let team of teams" (opened)="selectTeam(team)">
+              <mat-expansion-panel-header>
+                <mat-panel-title>
+                  {{ team.teamName }}
+                </mat-panel-title>
+              </mat-expansion-panel-header>
+
+              <!-- Team Details -->
+              <div class="team-details">
+                
+                <!-- Participants Section -->
+                <div class="section">
+                  <h4>
+                    <mat-icon>people</mat-icon>
+                    Participants
+                  </h4>
+                  <!--<mat-list>
+                    <mat-list-item *ngFor="let participant of participants">
+                      <mat-icon matListItemIcon>person</mat-icon>
+                      <div matListItemTitle>{{ participant.participant.name }}</div>
+                      <div matListItemLine>{{ participant.participant.email }}</div>
+            
+                    </mat-list-item>
+                    <div *ngIf="!participants.length" class="empty-state">
+                      <mat-icon>person_off</mat-icon>
+                      <p>No participants assigned to this team yet</p>
+                    </div>
+                  </mat-list>!-->
+      </div>
+
+                <!-- Checkpoints Section -->
+                <div class="section">
+
+                    <mat-expansion-panel>
+                        <mat-expansion-panel-header>
+                          <mat-panel-title>
+                            <mat-icon>flag</mat-icon>
+                            Checkpoints
+                          </mat-panel-title>
+                        </mat-expansion-panel-header>
+                    <mat-tab-group>
+
+                        <!-- AI Checkpoint Generator Tab -->
+                        <mat-tab label="AI Checkpoint Generator">
+                          <form [formGroup]="aiCheckpointForm" (ngSubmit)="onGenerateAICheckpoints()" class="ai-form">
+                            <mat-form-field appearance="outline" class="full-width">
+                              <mat-label>Project Description</mat-label>
+                              <textarea matInput formControlName="projectDescription"
+                                        placeholder="Describe the project in detail to generate relevant checkpoints"></textarea>
+                              <mat-hint>Provide a detailed description of the project to generate appropriate checkpoints</mat-hint>
+                            </mat-form-field>
+                            <button mat-raised-button color="accent" type="submit"
+                                    [disabled]="!aiCheckpointForm.valid || isGeneratingCheckpoints">
+                              <mat-icon>auto_awesome</mat-icon>
+                              {{ isGeneratingCheckpoints ? 'Generating...' : 'Generate Checkpoints' }}
+                            </button>
+                          </form>
+                        </mat-tab>
+                      
+                        <!-- Manual Checkpoint Creation Tab -->
+                        <mat-tab label="Manual Checkpoint Creation">
+                          <form [formGroup]="checkpointForm" (ngSubmit)="selectedTeam && onAddCheckpoint(selectedTeam)" class="checkpoint-form">
+                      
+                            <mat-form-field appearance="outline">
+                              <mat-label>Title</mat-label>
+                              <input matInput formControlName="title" placeholder="Enter checkpoint title">
+                            </mat-form-field>
+                      
+                            <mat-form-field appearance="outline">
+                              <mat-label>Description</mat-label>
+                              <textarea matInput formControlName="description" placeholder="Enter checkpoint description"></textarea>
+                            </mat-form-field>
+                      
+                            <mat-form-field appearance="outline">
+                              <mat-label>Percentage</mat-label>
+                              <input matInput type="number" formControlName="percentage" min="0" max="100">
+                              <mat-hint>Value between 0 and 100</mat-hint>
+                            </mat-form-field>
+                      
+                      
+                            <button mat-raised-button color="primary" type="submit"
+                                    [disabled]="!checkpointForm.valid || isAddingCheckpoint">
+                              <mat-icon>add</mat-icon>
+                              {{ isAddingCheckpoint ? 'Adding...' : 'Add Checkpoint' }}
+                            </button>
+                          </form>
+                        </mat-tab>
+                      
+                      </mat-tab-group>
+                      
+                      </mat-expansion-panel>
+                  <!-- Checkpoints List -->
+                  <div class="checkpoints-list">
+                    <mat-list>
+                      <mat-list-item *ngFor="let checkpoint of eventCheckpoints">
+                        <div matListItemTitle>{{ checkpoint.title }}</div>
+                        <div matListItemLine>{{ checkpoint.description }}</div>
+                        <div matListItemLine class="checkpoint-info">
+                          <span class="percentage-badge">{{ checkpoint.percentage }}%</span>
+
+                        </div>
+                      </mat-list-item>
+                      <div *ngIf="!teamCheckpoints.length" class="empty-state">
+                        <mat-icon>flag_off</mat-icon>
+                        <p>No checkpoints defined for this team yet</p>
+                      </div>
+                    </mat-list>
+                  </div>
+  </div>
+              </div>
+            </mat-expansion-panel>
+          </mat-accordion>
+          <div *ngIf="!teams.length" class="empty-state">
+            <mat-icon>groups_off</mat-icon>
+            <p>No teams created yet</p>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-form-field appearance="fill" class="full-width">
+        <mat-label>Select Team</mat-label>
+        <mat-select [(value)]="selectedTeam">
+          <mat-option *ngFor="let team of teams" [value]="team.id">{{ team.teamName }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+    <!-- Approved Participants Section -->
+    <mat-card class="participants-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>person_add</mat-icon>
+          Approved Participants
+        </mat-card-title>
+      </mat-card-header>
+
+      <mat-card-content>
+        <div class="participants-list">
+          <mat-list>
+            <mat-list-item *ngFor="let item of participants">
+              <mat-checkbox [checked]="item.selected" (change)="item.selected = $event.checked">
+                <div class="participant-info">
+                  <div class="participant-name">{{ item.participant.name }}</div>
+                  <div class="participant-email">{{ item.participant.email }}</div>
+                </div>
+              </mat-checkbox>
+            </mat-list-item>
+            <div *ngIf="!participants.length" class="empty-state">
+              <mat-icon>person_off</mat-icon>
+              <p>No approved participants available</p>
+            </div>
+          </mat-list>
+        </div>
+
+        <div class="participants-actions">
+          <button mat-raised-button color="primary" (click)="assignToTeam()" [disabled]="!selectedTeam || !hasSelectedParticipants()">
+            <mat-icon>group_add</mat-icon>
+            Assign to Selected Team
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    
+      
+      <!-- Participants list and checkboxes (your existing code) -->
+      
+      <div class="participants-actions">
+        <button mat-raised-button color="primary"
+                (click)="assignToTeam()"
+                [disabled]="!selectedTeam || !hasSelectedParticipants()">
+          <mat-icon>group_add</mat-icon>
+          Assign to Selected Team
+        </button>
+      </div>
+
+    <!-- Checkpoint Management Card -->
+    <mat-card class="checkpoint-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>flag</mat-icon>
+          Checkpoint Management
+        </mat-card-title>
+        <mat-card-subtitle>Create and manage checkpoints for teams</mat-card-subtitle>
+      </mat-card-header>
+      
+      <mat-card-content>
+        <div *ngIf="!selectedTeam" class="no-team-selected">
+          <p>Please select a team first to manage checkpoints</p>
+        </div>
+           
+        <div *ngIf="selectedTeam">
+          <mat-tab-group animationDuration="300ms">
+            <!-- Manual Checkpoint Tab -->
+            <mat-tab label="Manual Checkpoint">
+              <div class="tab-content">
+                <h3>Create Checkpoint</h3>
+                <form [formGroup]="checkpointForm" (ngSubmit)="addCheckpoint()">
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Title</mat-label>
+                    <input matInput formControlName="title" placeholder="Enter checkpoint title">
+                    <mat-error *ngIf="checkpointForm.get('title')?.hasError('required')">
+                      Title is required
+                    </mat-error>
+                  </mat-form-field>
+                  
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Description</mat-label>
+                    <textarea matInput formControlName="description" rows="3" placeholder="Enter checkpoint description"></textarea>
+                    <mat-error *ngIf="checkpointForm.get('description')?.hasError('required')">
+                      Description is required
+                    </mat-error>
+                  </mat-form-field>
+                  
+                  <div class="form-row">
+                    <mat-form-field appearance="outline" class="half-width">
+                      <mat-label>Percentage</mat-label>
+                      <input matInput type="number" formControlName="percentage" min="0" max="100">
+                      <mat-hint>Between 0 and 100</mat-hint>
+                      <mat-error *ngIf="checkpointForm.get('percentage')?.hasError('required')">
+                        Percentage is required
+                      </mat-error>
+                      <mat-error *ngIf="checkpointForm.get('percentage')?.hasError('min') || checkpointForm.get('percentage')?.hasError('max')">
+                        Percentage must be between 0 and 100
+                      </mat-error>
+                    </mat-form-field>
+                    
+                    <mat-form-field appearance="outline" class="half-width">
+                      <mat-label>Deadline</mat-label>
+                      <input matInput [matDatepicker]="picker" formControlName="deadline">
+                      <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                      <mat-datepicker #picker></mat-datepicker>
+                    </mat-form-field>
+                  </div>
+                  
+                  <div class="form-actions">
+                    <button 
+                      mat-raised-button 
+                      color="primary" 
+                      type="submit" 
+                      [disabled]="checkpointForm.invalid || isAddingCheckpoint">
+                      <mat-icon>add</mat-icon>
+                      {{ isAddingCheckpoint ? 'Adding...' : 'Add Checkpoint' }}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </mat-tab>
+            
+            <!-- AI Checkpoint Tab -->
+            <mat-tab label="AI Checkpoint Generator">
+              <div class="tab-content">
+                <h3>Generate Checkpoints with AI</h3>
+                <p class="ai-description">
+                  Describe your project, and our AI will suggest appropriate checkpoints with milestones.
+                </p>
+                
+                <form [formGroup]="aiCheckpointForm" (ngSubmit)="onGenerateAICheckpoints()">
+                  
+                  <div class="form-actions">
+                    <button 
+                      mat-raised-button 
+                      color="accent" 
+                      type="submit" 
+                      [disabled]="aiCheckpointForm.invalid || isGeneratingCheckpoints">
+                      <mat-icon>auto_awesome</mat-icon>
+                      {{ isGeneratingCheckpoints ? 'Generating...' : 'Generate AI Checkpoints' }}
+                    </button>
+      </div>
+
+                  <div *ngIf="isGeneratingCheckpoints" class="ai-loading">
+                    <mat-progress-spinner 
+                      color="accent" 
+                      mode="indeterminate" 
+                      diameter="40">
+                    </mat-progress-spinner>
+                    <span>Generating intelligent checkpoints...</span>
+                  </div>
+                </form>
+          </div>
+            </mat-tab>
+          </mat-tab-group>
+          
+          <!-- Current Checkpoints List -->
+          <div *ngIf="teamCheckpoints.length > 0" class="checkpoints-list-section">
+            <h3>Current Checkpoints</h3>
+            <mat-progress-bar 
+              [value]="teamProgress" 
+              color="primary" 
+              class="team-progress">
+            </mat-progress-bar>
+            <div class="progress-label">Overall Progress: {{teamProgress}}%</div>
+            
+            <mat-accordion>
+              <mat-expansion-panel *ngFor="let checkpoint of teamCheckpoints">
+                <mat-expansion-panel-header>
+                  <mat-panel-title>
+                    {{checkpoint.title}}
+                  </mat-panel-title>
+                  <mat-panel-description>
+                    {{checkpoint.percentage}}%
+                    <mat-icon *ngIf="checkpoint.status === 'COMPLETED'" color="primary">check_circle</mat-icon>
+                  </mat-panel-description>
+                </mat-expansion-panel-header>
+                
+                <p>{{checkpoint.description}}</p>
+                <p *ngIf="checkpoint.deadline"><strong>Deadline:</strong> {{checkpoint.deadline | date}}</p>
+                
+                <mat-action-row>
+                  <button 
+                    mat-button 
+                    color="primary" 
+                    [disabled]="checkpoint.status === 'COMPLETED'"
+                    (click)="checkpoint.id && updateCheckpointStatus(checkpoint.id, 'COMPLETED')">
+                    <mat-icon>check_circle</mat-icon>
+                    Mark as Complete
+                  </button>
+                  <button 
+                    mat-button 
+                    color="warn"
+                    (click)="checkpoint.id && deleteCheckpoint(checkpoint.id)">
+                    <mat-icon>delete</mat-icon>
+                    Delete
+                  </button>
+                </mat-action-row>
+              </mat-expansion-panel>
+            </mat-accordion>
+          </div>
+      </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

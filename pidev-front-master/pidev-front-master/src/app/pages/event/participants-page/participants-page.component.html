@@ -1,0 +1,89 @@
+<div class="container">
+  <h2>Gestion des Participants</h2>
+  
+  <!-- Selected IDs Display -->
+  <div *ngIf="selectedParticipantIds.length > 0" class="selected-ids">
+    <h3>IDs des participants sélectionnés:</h3>
+    <p>{{ selectedParticipantIds.join(', ') }}</p>
+  </div>
+
+  <!-- Participants Table -->
+  <table class="participants-table">
+    <thead>
+      <tr>
+        <th>
+          <input type="checkbox" (change)="toggleAllParticipants()">
+        </th>
+        <th>Nom</th>
+        <th>Email</th>
+        <th>Statut</th>
+        <th>Score Moyen</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let participant of participants" 
+          [class.selected]="participant.selected"
+          [class.accepted]="participant.status === 'ACCEPTED'"
+          [class.pending]="participant.status === 'PENDING'"
+          [class.rejected]="participant.status === 'REJECTED'">
+        <td>
+          <input type="checkbox" 
+                 [checked]="participant.selected"
+                 (change)="onSelectParticipant(participant)">
+        </td>
+        <td>{{ participant.participant.name }}</td>
+        <td>{{ participant.participant.email }}</td>
+        <td>
+          <span class="status-badge" [ngClass]="participant.status?.toLowerCase()">
+            {{ participant.status || 'PENDING' }}
+          </span>
+        </td>
+        <td>{{ participant.participant.averageScore || 'N/A' }}</td>
+        <td>
+          <button (click)="updateParticipantDecision(participant, true)" 
+                  [disabled]="participant.status === 'ACCEPTED'">
+            Accepter
+          </button>
+          <button (click)="updateParticipantDecision(participant, false)"
+                  [disabled]="participant.status === 'REJECTED'">
+            Rejeter
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Debug Info (remove in production) -->
+  <div class="debug-info">
+    <p><strong>Current Event ID:</strong> {{ eventId }}</p>
+    <p><strong>Route Params:</strong> {{ routeParams | json }}</p>
+    <p><strong>Selected Participants:</strong> {{ selectedParticipantIds.length }}</p>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="action-buttons">
+    <button (click)="sendEmails()" [disabled]="selectedParticipantIds.length === 0">
+      Envoyer les invitations
+    </button>
+
+    <!-- Button navigation -->
+    <button (click)="openHackathonStudio()" class="hackathon-button">
+      Hackathon Studio (Event ID: {{ eventId }})<br>
+      <small>Path: /events/{{ eventId }}/teams</small>
+    </button>
+    
+    <!-- Direct link navigation -->
+    <a [routerLink]="['/events', eventId, 'teams']" class="direct-link">
+      Direct Link to Team Management
+    </a>
+  </div>
+
+  <!-- Notification -->
+  <div *ngIf="showNotification" 
+       class="notification" 
+       [class.success]="notificationSuccess"
+       [class.error]="!notificationSuccess">
+    {{ notificationMessage }}
+  </div>
+</div>

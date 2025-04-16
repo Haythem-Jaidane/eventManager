@@ -1,0 +1,240 @@
+#
+# There is insufficient memory for the Java Runtime Environment to continue.
+# Native memory allocation (mmap) failed to map 266338304 bytes for G1 virtual space
+# Possible reasons:
+#   The system is out of physical RAM or swap space
+#   The process is running with CompressedOops enabled, and the Java Heap may be blocking the growth of the native heap
+# Possible solutions:
+#   Reduce memory load on the system
+#   Increase physical memory or swap space
+#   Check if swap backing store is full
+#   Decrease Java heap size (-Xmx/-Xms)
+#   Decrease number of Java threads
+#   Decrease Java thread stack sizes (-Xss)
+#   Set larger code cache with -XX:ReservedCodeCacheSize=
+#   JVM is running with Zero Based Compressed Oops mode in which the Java heap is
+#     placed in the first 32GB address space. The Java Heap base address is the
+#     maximum limit for the native heap growth. Please use -XX:HeapBaseMinAddress
+#     to set the Java Heap base and to place the Java Heap above 32GB virtual address.
+# This output file may be truncated or incomplete.
+#
+#  Out of Memory Error (os_windows.cpp:3825), pid=15156, tid=26124
+#
+# JRE version:  (17.0.8.1+7) (build )
+# Java VM: OpenJDK 64-Bit Server VM (17.0.8.1+7-b1063.1, mixed mode, emulated-client, sharing, tiered, compressed oops, compressed class ptrs, g1 gc, windows-amd64)
+# No core dump will be written. Minidumps are not enabled by default on client versions of Windows
+#
+
+---------------  S U M M A R Y ------------
+
+Command Line: -XX:TieredStopAtLevel=1 -Dspring.output.ansi.enabled=always -Dcom.sun.management.jmxremote -Dspring.jmx.enabled=true -Dspring.liveBeansView.mbeanDomain -Dspring.application.admin.enabled=true -Dmanagement.endpoints.jmx.exposure.include=* -javaagent:C:\Program Files\JetBrains\IntelliJ IDEA 2023.2.2\lib\idea_rt.jar=58448:C:\Program Files\JetBrains\IntelliJ IDEA 2023.2.2\bin -Dfile.encoding=UTF-8 tn.esprit.examen.nomPrenomClasseExamen.nomPrenomClasseExamenApplication
+
+Host: Intel(R) Core(TM) i7-10750H CPU @ 2.60GHz, 12 cores, 15G,  Windows 10 , 64 bit Build 19041 (10.0.19041.5438)
+Time: Sun Mar  2 23:32:44 2025 Paris, Madrid elapsed time: 0.013181 seconds (0d 0h 0m 0s)
+
+---------------  T H R E A D  ---------------
+
+Current thread (0x0000019d5ce5dee0):  JavaThread "Unknown thread" [_thread_in_vm, id=26124, stack(0x0000003bcb400000,0x0000003bcb500000)]
+
+Stack: [0x0000003bcb400000,0x0000003bcb500000]
+Native frames: (J=compiled Java code, j=interpreted, Vv=VM code, C=native code)
+V  [jvm.dll+0x6852da]  os::platform_print_native_stack+0xca  (os_windows_x86.cpp:235)
+V  [jvm.dll+0x844ad4]  VMError::report+0xc34  (vmError.cpp:741)
+V  [jvm.dll+0x8463ee]  VMError::report_and_die+0x78e  (vmError.cpp:1582)
+V  [jvm.dll+0x846a53]  VMError::report_and_die+0x43  (vmError.cpp:1368)
+V  [jvm.dll+0x24b7cf]  report_vm_out_of_memory+0x8f  (debug.cpp:321)
+V  [jvm.dll+0x682099]  os::pd_commit_memory_or_exit+0xc9  (os_windows.cpp:3833)
+V  [jvm.dll+0x67677a]  os::commit_memory_or_exit+0x2a  (os.cpp:1750)
+V  [jvm.dll+0x30be2b]  G1PageBasedVirtualSpace::commit+0x19b  (g1PageBasedVirtualSpace.cpp:204)
+V  [jvm.dll+0x3132d6]  G1RegionsLargerThanCommitSizeMapper::commit_regions+0x96  (g1RegionToSpaceMapper.cpp:100)
+V  [jvm.dll+0x36302e]  HeapRegionManager::expand_any+0xee  (heapRegionManager.cpp:363)
+V  [jvm.dll+0x36325f]  HeapRegionManager::expand_by+0x7f  (heapRegionManager.cpp:380)
+V  [jvm.dll+0x2e1f48]  G1CollectedHeap::expand+0xb8  (g1CollectedHeap.cpp:1298)
+V  [jvm.dll+0x2e2eb4]  G1CollectedHeap::initialize+0x664  (g1CollectedHeap.cpp:1719)
+V  [jvm.dll+0x815a61]  universe_init+0xb1  (universe.cpp:736)
+V  [jvm.dll+0x370df1]  init_globals+0x31  (init.cpp:124)
+V  [jvm.dll+0x7f4e2c]  Threads::create_vm+0x60c  (thread.cpp:2901)
+V  [jvm.dll+0x3f3f1f]  JNI_CreateJavaVM_inner+0x8f  (jni.cpp:3635)
+V  [jvm.dll+0x3f5b31]  JNI_CreateJavaVM+0x11  (jni.cpp:3727)
+C  [jli.dll+0x528f]  JavaMain+0x113  (java.c:413)
+C  [ucrtbase.dll+0x21bb2]
+C  [KERNEL32.DLL+0x17374]
+C  [ntdll.dll+0x4cc91]
+
+
+---------------  P R O C E S S  ---------------
+
+Threads class SMR info:
+_java_thread_list=0x00007ffbcf5f00d8, length=0, elements={
+}
+
+Java Threads: ( => current thread )
+
+Other Threads:
+  0x0000019d5cec7730 GCTaskThread "GC Thread#0" [stack: 0x0000003bcb500000,0x0000003bcb600000] [id=17204]
+  0x0000019d5ced8310 ConcurrentGCThread "G1 Main Marker" [stack: 0x0000003bcb600000,0x0000003bcb700000] [id=14816]
+  0x0000019d5ced94c0 ConcurrentGCThread "G1 Conc#0" [stack: 0x0000003bcb700000,0x0000003bcb800000] [id=16096]
+
+[error occurred during error reporting (printing all threads), id 0xc0000005, EXCEPTION_ACCESS_VIOLATION (0xc0000005) at pc=0x00007ffbceda2ab7]
+
+VM state: not at safepoint (not fully initialized)
+
+VM Mutex/Monitor currently owned by a thread:  ([mutex/lock_event])
+[0x0000019d5ce589a0] Heap_lock - owner thread: 0x0000019d5ce5dee0
+
+Heap address: 0x0000000703600000, size: 4042 MB, Compressed Oops mode: Zero based, Oop shift amount: 3
+
+CDS archive(s) mapped at: [0x0000000000000000-0x0000000000000000-0x0000000000000000), size 0, SharedBaseAddress: 0x0000000800000000, ArchiveRelocationMode: 1.
+Narrow klass base: 0x0000000000000000, Narrow klass shift: 0, Narrow klass range: 0x0
+
+GC Precious Log:
+<Empty>
+
+Heap:
+ garbage-first heap   total 0K, used 0K [0x0000000703600000, 0x0000000800000000)
+  region size 2048K, 0 young (0K), 0 survivors (0K)
+ Metaspace       used 0K, committed 0K, reserved 0K
+  class space    used 0K, committed 0K, reserved 0K
+
+Heap Regions: E=young(eden), S=young(survivor), O=old, HS=humongous(starts), HC=humongous(continues), CS=collection set, F=free, OA=open archive, CA=closed archive, TAMS=top-at-mark-start (previous, next)
+
+Card table byte_map: [0x0000019d66110000,0x0000019d66900000] _byte_map_base: 0x0000019d628f5000
+
+Marking Bits (Prev, Next): (CMBitMap*) 0x0000019d5cec7d50, (CMBitMap*) 0x0000019d5cec7d90
+ Prev Bits: [0x0000019d670f0000, 0x0000019d6b018000)
+ Next Bits: [0x0000019d6b020000, 0x0000019d6ef48000)
+
+GC Heap History (0 events):
+No events
+
+Dll operation events (1 events):
+Event: 0.007 Loaded shared library C:\Users\anisa\.jdks\jbr-17.0.8.1\bin\java.dll
+
+Deoptimization events (0 events):
+No events
+
+Classes unloaded (0 events):
+No events
+
+Classes redefined (0 events):
+No events
+
+Internal exceptions (0 events):
+No events
+
+VM Operations (0 events):
+No events
+
+Events (0 events):
+No events
+
+
+Dynamic libraries:
+0x00007ff7fcff0000 - 0x00007ff7fcffa000 	C:\Users\anisa\.jdks\jbr-17.0.8.1\bin\java.exe
+0x00007ffc79e10000 - 0x00007ffc7a008000 	C:\WINDOWS\SYSTEM32\ntdll.dll
+0x00007ffc787f0000 - 0x00007ffc788b2000 	C:\WINDOWS\System32\KERNEL32.DLL
+0x00007ffc77850000 - 0x00007ffc77b4f000 	C:\WINDOWS\System32\KERNELBASE.dll
+0x00007ffc77c10000 - 0x00007ffc77d10000 	C:\WINDOWS\System32\ucrtbase.dll
+0x00007ffc43610000 - 0x00007ffc4362b000 	C:\Users\anisa\.jdks\jbr-17.0.8.1\bin\VCRUNTIME140.dll
+0x00007ffc47750000 - 0x00007ffc47767000 	C:\Users\anisa\.jdks\jbr-17.0.8.1\bin\jli.dll
+0x00007ffc78650000 - 0x00007ffc787ed000 	C:\WINDOWS\System32\USER32.dll
+0x00007ffc5af50000 - 0x00007ffc5b1ea000 	C:\WINDOWS\WinSxS\amd64_microsoft.windows.common-controls_6595b64144ccf1df_6.0.19041.4355_none_60b8b9eb71f62e16\COMCTL32.dll
+0x00007ffc777d0000 - 0x00007ffc777f2000 	C:\WINDOWS\System32\win32u.dll
+0x00007ffc784e0000 - 0x00007ffc7857e000 	C:\WINDOWS\System32\msvcrt.dll
+0x00007ffc799c0000 - 0x00007ffc799eb000 	C:\WINDOWS\System32\GDI32.dll
+0x00007ffc776b0000 - 0x00007ffc777ca000 	C:\WINDOWS\System32\gdi32full.dll
+0x00007ffc77610000 - 0x00007ffc776ad000 	C:\WINDOWS\System32\msvcp_win.dll
+0x00007ffc79510000 - 0x00007ffc7953f000 	C:\WINDOWS\System32\IMM32.DLL
+0x00007ffc47740000 - 0x00007ffc4774c000 	C:\Users\anisa\.jdks\jbr-17.0.8.1\bin\vcruntime140_1.dll
+0x00007ffc29740000 - 0x00007ffc297cd000 	C:\Users\anisa\.jdks\jbr-17.0.8.1\bin\msvcp140.dll
+0x00007ffbceab0000 - 0x00007ffbcf733000 	C:\Users\anisa\.jdks\jbr-17.0.8.1\bin\server\jvm.dll
+0x00007ffc79460000 - 0x00007ffc7950f000 	C:\WINDOWS\System32\ADVAPI32.dll
+0x00007ffc79c10000 - 0x00007ffc79caf000 	C:\WINDOWS\System32\sechost.dll
+0x00007ffc78010000 - 0x00007ffc78133000 	C:\WINDOWS\System32\RPCRT4.dll
+0x00007ffc77be0000 - 0x00007ffc77c07000 	C:\WINDOWS\System32\bcrypt.dll
+0x00007ffc769f0000 - 0x00007ffc76a3b000 	C:\WINDOWS\SYSTEM32\POWRPROF.dll
+0x00007ffc60890000 - 0x00007ffc608b7000 	C:\WINDOWS\SYSTEM32\WINMM.dll
+0x00007ffc70870000 - 0x00007ffc7087a000 	C:\WINDOWS\SYSTEM32\VERSION.dll
+0x00007ffc57420000 - 0x00007ffc57429000 	C:\WINDOWS\SYSTEM32\WSOCK32.dll
+0x00007ffc78580000 - 0x00007ffc785eb000 	C:\WINDOWS\System32\WS2_32.dll
+0x00007ffc768b0000 - 0x00007ffc768c2000 	C:\WINDOWS\SYSTEM32\UMPDC.dll
+0x00007ffc75cd0000 - 0x00007ffc75ce2000 	C:\WINDOWS\SYSTEM32\kernel.appcore.dll
+0x00007ffc44a50000 - 0x00007ffc44a5a000 	C:\Users\anisa\.jdks\jbr-17.0.8.1\bin\jimage.dll
+0x00007ffc759e0000 - 0x00007ffc75bc4000 	C:\WINDOWS\SYSTEM32\DBGHELP.DLL
+0x00007ffc5b670000 - 0x00007ffc5b6a4000 	C:\WINDOWS\SYSTEM32\dbgcore.DLL
+0x00007ffc77b50000 - 0x00007ffc77bd2000 	C:\WINDOWS\System32\bcryptPrimitives.dll
+0x00007ffc72090000 - 0x00007ffc7209e000 	C:\Users\anisa\.jdks\jbr-17.0.8.1\bin\instrument.dll
+0x00007ffc433a0000 - 0x00007ffc433c5000 	C:\Users\anisa\.jdks\jbr-17.0.8.1\bin\java.dll
+
+dbghelp: loaded successfully - version: 4.0.5 - missing functions: none
+symbol engine: initialized successfully - sym options: 0x614 - pdb path: .;C:\Users\anisa\.jdks\jbr-17.0.8.1\bin;C:\WINDOWS\SYSTEM32;C:\WINDOWS\WinSxS\amd64_microsoft.windows.common-controls_6595b64144ccf1df_6.0.19041.4355_none_60b8b9eb71f62e16;C:\Users\anisa\.jdks\jbr-17.0.8.1\bin\server
+
+VM Arguments:
+jvm_args: -XX:TieredStopAtLevel=1 -Dspring.output.ansi.enabled=always -Dcom.sun.management.jmxremote -Dspring.jmx.enabled=true -Dspring.liveBeansView.mbeanDomain -Dspring.application.admin.enabled=true -Dmanagement.endpoints.jmx.exposure.include=* -javaagent:C:\Program Files\JetBrains\IntelliJ IDEA 2023.2.2\lib\idea_rt.jar=58448:C:\Program Files\JetBrains\IntelliJ IDEA 2023.2.2\bin -Dfile.encoding=UTF-8 
+java_command: tn.esprit.examen.nomPrenomClasseExamen.nomPrenomClasseExamenApplication
+java_class_path (initial): D:\esprit 2024-2025\pidev\nomPrenomClasseExamen (1)\codingFactory\target\classes;C:\Users\anisa\.m2\repository\org\springframework\boot\spring-boot-starter-data-jpa\3.3.4\spring-boot-starter-data-jpa-3.3.4.jar;C:\Users\anisa\.m2\repository\org\springframework\boot\spring-boot-starter-aop\3.3.4\spring-boot-starter-aop-3.3.4.jar;C:\Users\anisa\.m2\repository\org\springframework\spring-aop\6.1.13\spring-aop-6.1.13.jar;C:\Users\anisa\.m2\repository\org\aspectj\aspectjweaver\1.9.22.1\aspectjweaver-1.9.22.1.jar;C:\Users\anisa\.m2\repository\org\springframework\boot\spring-boot-starter-jdbc\3.3.4\spring-boot-starter-jdbc-3.3.4.jar;C:\Users\anisa\.m2\repository\com\zaxxer\HikariCP\5.1.0\HikariCP-5.1.0.jar;C:\Users\anisa\.m2\repository\org\springframework\spring-jdbc\6.1.13\spring-jdbc-6.1.13.jar;C:\Users\anisa\.m2\repository\org\hibernate\orm\hibernate-core\6.5.3.Final\hibernate-core-6.5.3.Final.jar;C:\Users\anisa\.m2\repository\jakarta\persistence\jakarta.persistence-api\3.1.0\jakarta.persistence-api-3.1.0.jar;C:\Users\anisa\.m2\repository\jakarta\transaction\jakarta.transaction-api\2.0.1\jakarta.transaction-api-2.0.1.jar;C:\Users\anisa\.m2\repository\org\jboss\logging\jboss-logging\3.5.3.Final\jboss-logging-3.5.3.Final.jar;C:\Users\anisa\.m2\repository\org\hibernate\common\hibernate-commons-annotations\6.0.6.Final\hibernate-commons-annotations-6.0.6.Final.jar;C:\Users\anisa\.m2\repository\io\smallrye\jandex\3.1.2\jandex-3.1.2.jar;C:\Users\anisa\.m2\repository\com\fasterxml\classmate\1.7.0\classmate-1.7.0.jar;C:\Users\anisa\.m2\repository\net\bytebuddy\byte-buddy\1.14.19\byte-buddy-1.14.19.jar;C:\Users\anisa\.m2\repository\org\glassfish\jaxb\jaxb-runtime\4.0.5\jaxb-runtime-4.0.5.jar;C:\Users\anisa\.m2\repository\org\glassfish\jaxb\jaxb-core\4.0.5\jaxb-core-4.0.5.jar;C:\Users\anisa\.m2\repository\org\eclipse\angus\angus-activation\2.0.2\angus-activation-2.0.2.jar;C:\Users\anisa\.m2\repository\org\glassfish\jaxb\txw2\4.0.5\txw2-4.0.5.jar;C:\Users
+Launcher Type: SUN_STANDARD
+
+[Global flags]
+     intx CICompilerCount                          = 4                                         {product} {ergonomic}
+     uint ConcGCThreads                            = 3                                         {product} {ergonomic}
+     uint G1ConcRefinementThreads                  = 10                                        {product} {ergonomic}
+   size_t G1HeapRegionSize                         = 2097152                                   {product} {ergonomic}
+    uintx GCDrainStackTargetSize                   = 64                                        {product} {ergonomic}
+   size_t InitialHeapSize                          = 266338304                                 {product} {ergonomic}
+     bool ManagementServer                         = true                                      {product} {command line}
+   size_t MarkStackSize                            = 4194304                                   {product} {ergonomic}
+   size_t MaxHeapSize                              = 4238344192                                {product} {ergonomic}
+   size_t MinHeapDeltaBytes                        = 2097152                                   {product} {ergonomic}
+   size_t MinHeapSize                              = 8388608                                   {product} {ergonomic}
+    uintx NonProfiledCodeHeapSize                  = 0                                      {pd product} {ergonomic}
+     bool ProfileInterpreter                       = false                                  {pd product} {command line}
+    uintx ProfiledCodeHeapSize                     = 0                                      {pd product} {ergonomic}
+   size_t SoftMaxHeapSize                          = 4238344192                             {manageable} {ergonomic}
+     intx TieredStopAtLevel                        = 1                                         {product} {command line}
+     bool UseCompressedClassPointers               = true                           {product lp64_product} {ergonomic}
+     bool UseCompressedOops                        = true                           {product lp64_product} {ergonomic}
+     bool UseG1GC                                  = true                                      {product} {ergonomic}
+     bool UseLargePagesIndividualAllocation        = false                                  {pd product} {ergonomic}
+
+Logging:
+Log output configuration:
+ #0: stdout all=warning uptime,level,tags
+ #1: stderr all=off uptime,level,tags
+
+Environment Variables:
+PATH=C:\Program Files (x86)\VMware\VMware Workstation\bin\;C:\oraclexe\app\oracle\product\11.2.0\server\bin;;C:\windows\system32;C:\oraclexe\app\oracle\product\11.2.0\server\bin;C:\windows;C:\windows\System32\Wbem;C:\windows\System32\WindowsPowerShell\v1.0\;C:\windows\System32\OpenSSH\;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Program Files\NVIDIA Corporation\NVIDIA NvDLISR;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\Microsoft VS Code\bin;C:\instantclient12_2;C:\oraclexe\app\oracle\admin\XE;C:\oraclexe;C:\Program Files\Git\cmd;C:\Program Files (x86)\GnuWin32\bin;C:\Program Files\nodejs\;C:\Program Files\Microsoft SQL Server\150\Tools\Binn\;C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn\;C:\Program Files\dotnet\;c:\Users\anisa\AppData\Local\Programs\Trae\bin;C:\Users\anisa\AppData\Local\Programs\Python\Python313\Scripts\;C:\Users\anisa\AppData\Local\Programs\Python\Python313\;C:\Users\anisa\AppData\Local\Programs\Python\Launcher\;C:\Users\anisa\scoop\shims;C:\Users\anisa\AppData\Local\Microsoft\WindowsApps;D:\esprit 2022-2023\CCA2\php;C:\Users\anisa\AppData\Local\ComposerSetup\bin;C:\Users\anisa\AppData\Roaming\Composer\vendor\bin;C:\Users\anisa\AppData\Roaming\npm;C:\Users\anisa\.dotnet\tools
+USERNAME=anisa
+OS=Windows_NT
+PROCESSOR_IDENTIFIER=Intel64 Family 6 Model 165 Stepping 2, GenuineIntel
+TMP=C:\Users\anisa\AppData\Local\Temp
+TEMP=C:\Users\anisa\AppData\Local\Temp
+
+
+JNI global refs:
+JNI global refs: 0, weak refs: 0
+
+JNI global refs memory usage: 0, weak refs: 0
+
+OOME stack traces (most recent first):
+Classloader memory used:
+
+
+---------------  S Y S T E M  ---------------
+
+OS:
+ Windows 10 , 64 bit Build 19041 (10.0.19041.5438)
+OS uptime: 0 days 10:37 hours
+
+CPU: total 12 (initial active 12) (6 cores per cpu, 2 threads per core) family 6 model 165 stepping 2 microcode 0xfc, cx8, cmov, fxsr, ht, mmx, 3dnowpref, sse, sse2, sse3, ssse3, sse4.1, sse4.2, popcnt, lzcnt, tsc, tscinvbit, avx, avx2, aes, erms, clmul, bmi1, bmi2, adx, fma, vzeroupper, clflush, clflushopt
+Processor Information for all 12 processors :
+  Max Mhz: 2592, Current Mhz: 2592, Mhz Limit: 2592
+
+Memory: 4k page, system-wide physical 16160M (1911M free)
+TotalPageFile size 30645M (AvailPageFile size 213M)
+current process WorkingSet (physical memory assigned to process): 37M, peak: 37M
+current process commit charge ("private bytes"): 85M, peak: 313M
+
+vm_info: OpenJDK 64-Bit Server VM (17.0.8.1+7-b1063.1) for windows-amd64 JRE (17.0.8.1+7-b1063.1), built on 2023-09-22 by "builduser" with MS VC++ 16.10 / 16.11 (VS2019)
+
+END.
